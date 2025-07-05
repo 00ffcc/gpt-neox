@@ -581,7 +581,7 @@ def tb_wandb_log(
         if tensorboard_writer:
             tensorboard_writer.add_scalar(key, value, iteration_no)
         if use_wandb:
-            wandb.log({key: value}, step=iteration_no)
+            wandb.log({key: value.item() if isinstance(value, torch.Tensor) else value}, step=iteration_no)
         if comet_experiment:
             comet_experiment.__internal_api__log_metric__(
                 key, value, framework="gpt-neox", step=iteration_no

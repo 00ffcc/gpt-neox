@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from .gpt2_model import GPT2ModelPipe
+from .emb_model import GPT2DeepEmbModelPipe
 from .utils import (
     get_params_for_weight_decay_optimization,
     mark_norms_for_sequence_parallel_grad_sync,

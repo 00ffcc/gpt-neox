@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 try:
     from .template import NeoXArgsTemplate
@@ -1638,3 +1638,26 @@ class NeoXArgsMoE(NeoXArgsTemplate):
     Coefficient for MoE routing jitter. Jitter is
     not used if set to None
     """
+@dataclass
+class NeoXArgsDeepEmb(NeoXArgsTemplate):
+    """
+    Deep Emb Arguments
+    """
+    emb_layers_idx: list = field(default_factory=list)
+    """
+    List of layers to use deep embeddings. If empty, no deep embeddings are used.
+    """
+
+    emb_optimizer_params: dict = field(default_factory=lambda: {
+        'lr': 1e-5,
+        'beta1': 0.9,
+        'beta2': 0.999,
+        'weight_decay': 0.001,
+        'eps': 1e-8,
+    })
+
+    emb_init_std: float = 0.001
+
+    emb_output_dtype: str = 'bf16'
+
+    emb_params_dtype: str = 'bf16'

@@ -43,6 +43,7 @@ from megatron.utils import (
 from megatron import print_rank_0, mpu
 from megatron.model import (
     GPT2ModelPipe,
+    GPT2DeepEmbModelPipe,
     SoftEmbedding,
     get_params_for_weight_decay_optimization,
     mark_norms_for_sequence_parallel_grad_sync,
@@ -895,7 +896,7 @@ def get_model(neox_args, use_cache=False):
     with deepspeed.zero.Init(
         config_dict_or_path=neox_args.deepspeed_config
     ) if neox_args.zero_stage == 3 else nullcontext() as gs:
-        model = GPT2ModelPipe(
+        model = GPT2DeepEmbModelPipe(
             neox_args=neox_args,
             num_tokentypes=0,
             parallel_output=True if neox_args.train_impl != "rm" else False,
@@ -923,6 +924,7 @@ def get_model(neox_args, use_cache=False):
             if not "soft_embedding" in name:
                 param.requires_grad = False
 
+    assert not neox_args.is_pipe_parallel, 'pp is not supported for DeepEmb models'
     if not neox_args.is_pipe_parallel:
         # Export PipeParallel model to nn.Sequential model to avoid the overhead of deepspeed's pipe parallel training
         model = model.to_sequential()
@@ -1506,6 +1508,10 @@ def train(
             lr = optimizer.param_groups[0].get("lr", 0)
         else:
             lr = 0
+
+        # update lr for DeepEmb
+        if model.emb is not None:
+            model.emb[0].config.lr = lr
 
         # Logging.
         report_memory_flag = training_log(

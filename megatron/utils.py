@@ -27,6 +27,10 @@ import requests
 
 try:
     import wandb
+    # import swanlab as wandb
+    import swanlab
+    swanlab.sync_wandb()
+
 except ModuleNotFoundError:
     pass
 
