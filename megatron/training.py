@@ -44,6 +44,7 @@ from megatron import print_rank_0, mpu
 from megatron.model import (
     GPT2ModelPipe,
     GPT2DeepEmbModelPipe,
+    GPT2DeepEmbModelPipeFast,
     SoftEmbedding,
     get_params_for_weight_decay_optimization,
     mark_norms_for_sequence_parallel_grad_sync,
@@ -896,13 +897,22 @@ def get_model(neox_args, use_cache=False):
     with deepspeed.zero.Init(
         config_dict_or_path=neox_args.deepspeed_config
     ) if neox_args.zero_stage == 3 else nullcontext() as gs:
-        model = GPT2DeepEmbModelPipe(
-            neox_args=neox_args,
-            num_tokentypes=0,
-            parallel_output=True if neox_args.train_impl != "rm" else False,
-            topology=mpu.get_topology(),
-            use_cache=use_cache,
-        )
+        if neox_args.use_fast_embs:
+            model = GPT2DeepEmbModelPipeFast(
+                neox_args=neox_args,
+                num_tokentypes=0,
+                parallel_output=True if neox_args.train_impl != "rm" else False,
+                topology=mpu.get_topology(),
+                use_cache=use_cache,
+            )
+        else:
+            model = GPT2DeepEmbModelPipe(
+                neox_args=neox_args,
+                num_tokentypes=0,
+                parallel_output=True if neox_args.train_impl != "rm" else False,
+                topology=mpu.get_topology(),
+                use_cache=use_cache,
+            )
 
     ### soft prompt tuning stuff ###
     if neox_args.soft_prompt_tuning is not None and neox_args.soft_prompt_tuning.get(
@@ -1511,7 +1521,10 @@ def train(
 
         # update lr for DeepEmb
         if model.emb is not None:
-            model.emb[0].config.lr = lr
+            if neox_args.use_fast_embs:
+                model.emb.update_lr(lr)
+            else:
+                model.emb[0].config.lr = lr
 
         # Logging.
         report_memory_flag = training_log(

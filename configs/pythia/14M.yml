@@ -15,7 +15,7 @@
   "pos-emb": "rotary",
   "rotary-pct": 0.25,
   "no-weight-tying": true,
-  "gpt-j-residual": true,
+  "gpt-j-residual": false,
   "output-layer-parallelism": "column",
 
   "attention-config": [[["flash"], 6]],
@@ -89,5 +89,8 @@
   "vocab-file": "/NAS/wujunkang/guizhiyu/gpt-neox/20B_tokenizer.json",
 
   # DeepEmb settings
-  "emb_layers_idx": [1],
+  # "emb_layers_idx": [],
+  "emb_layers_idx": [0, 1, 2, 3, 4, 5],
+
+  "emb_init_std": 0.02,
 }

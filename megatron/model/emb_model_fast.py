@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GPT-2 model. with deep embed"""
+"""GPT-2 model. with deep embed. using fast version"""
 
 import math
 import torch
@@ -43,7 +43,8 @@ from megatron.model.word_embeddings import EmbeddingPipe, SoftEmbedding
 from deepspeed.pipe import PipelineModule, LayerSpec, TiedLayerSpec
 from typing import Union, List
 
-from mole.dist_embed.a2a_embed import SparseEmbedding
+# from mole.dist_embed.a2a_embed import SparseEmbedding
+from mole.dist_embed.a2a_embed_fast import SparseEmbedding
 
 class ParallelTransformerLayerDeepEmb(ParallelTransformerLayer):
     def __init__(self, **kwargs):
@@ -286,9 +287,7 @@ class SequentialWrapperDeepEmb(torch.nn.Module):
 
         tokens, position_ids, attention_mask = forward_input
         if self.emb is not None:
-            emb = self.emb[0](tokens.transpose(0, 1).contiguous()) # [b, s, h] -> [s, b, h]
-        else:
-            emb = None
+            self.emb.dispatch(tokens.transpose(0, 1).contiguous()) # [b, s, h] -> [s, b, h]
 
         def exec_range_func(start, end):
             """Helper function to be used with checkpoint()
@@ -307,7 +306,7 @@ class SequentialWrapperDeepEmb(torch.nn.Module):
                         if layer_idx in self.neox_args.emb_layers_idx:
                             emb_idx = self.neox_args.emb_layers_idx.index(layer_idx)
                             hidden_size = self.neox_args.hidden_size
-                            layer_emb = emb[:, :, hidden_size * emb_idx: hidden_size * (emb_idx + 1)]
+                            layer_emb = emb.combine(emb_idx)
                         else:
                             layer_emb = None
                         hidden_states, attention_mask = inputs
@@ -438,14 +437,13 @@ class GPT2DeepEmbModelPipe(PipelineModule, torch.nn.Module):
         embedding_dim = len(neox_args.emb_layers_idx) * neox_args.hidden_size
 
         if embedding_dim > 0:
-            self.emb = [SparseEmbedding(
+            self.emb = SparseEmbedding(
                         num_embeddings         = neox_args.padded_vocab_size, 
                         embedding_dim          = embedding_dim,
                         optimizer_params       = neox_args.emb_optimizer_params,
-                        std                    = neox_args.emb_init_std,
                         embedding_output_dtype = neox_args.emb_output_dtype,
                         params_dtype           = neox_args.emb_params_dtype,
-                    )]
+                    )
             # nn.init.constant_(self.emb[0].weight, 1) # for DeepEmb
             nn.init.normal_(self.emb[0].weight, 0.0, neox_args.emb_init_std)
         else:

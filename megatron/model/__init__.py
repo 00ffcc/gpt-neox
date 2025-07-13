@@ -16,6 +16,7 @@
 
 from .gpt2_model import GPT2ModelPipe
 from .emb_model import GPT2DeepEmbModelPipe
+from .emb_model_fast import GPT2DeepEmbModelPipe as GPT2DeepEmbModelPipeFast
 from .utils import (
     get_params_for_weight_decay_optimization,
     mark_norms_for_sequence_parallel_grad_sync,

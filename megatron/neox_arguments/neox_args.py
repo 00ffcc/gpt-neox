@@ -1654,6 +1654,7 @@ class NeoXArgsDeepEmb(NeoXArgsTemplate):
         'beta2': 0.999,
         'weight_decay': 0.001,
         'eps': 1e-8,
+        'grad_clip_max_norm': 1.0,
     })
 
     emb_init_std: float = 0.001
@@ -1661,3 +1662,5 @@ class NeoXArgsDeepEmb(NeoXArgsTemplate):
     emb_output_dtype: str = 'bf16'
 
     emb_params_dtype: str = 'bf16'
+
+    use_fast_embs: bool = True

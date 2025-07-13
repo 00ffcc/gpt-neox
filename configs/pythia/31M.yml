@@ -1,4 +1,7 @@
 {
+  "wandb_project": "pythia",
+  "wandb_group": "31M",
+  
   # parallelism settings
   "pipe-parallel-size": 0,
   "model-parallel-size": 1,
@@ -12,12 +15,12 @@
   "pos-emb": "rotary",
   "rotary-pct": 0.25,
   "no-weight-tying": true,
-  "gpt-j-residual": true,
+  "gpt-j-residual": false,
   "output-layer-parallelism": "column",
 
   "attention-config": [[["flash"], 6]],
 
-  "scaled-upper-triang-masked-softmax-fusion": true,
+  "scaled-upper-triang-masked-softmax-fusion": false,
   "bias-gelu-fusion": true,
 
   # init methods
@@ -46,9 +49,9 @@
   },
 
   # batch size (trained on 32 gpus)
-  "train_micro_batch_size_per_gpu": 32,
+  "train_micro_batch_size_per_gpu": 16,
   "data-impl": "mmap",
-  "num_workers": 2,
+  "num_workers": 16,
 
   # activation checkpointing
   "checkpoint-activations": false,
@@ -63,15 +66,7 @@
   "attention-dropout": 0,
 
   # precision settings
-  "fp16": {
-    "fp16": true,
-    "enabled": true,
-    "loss_scale": 0,
-    "loss_scale_window": 1000,
-    "initial_scale_power": 12,
-    "hysteresis": 2,
-    "min_loss_scale": 1
-  },
+  "precision": "bfloat16",
 
   "train-iters": 143000,
   "lr-decay-iters": 143000,
@@ -79,18 +74,22 @@
   "lr-decay-style": "cosine",
   "warmup": 0.01,
   "checkpoint-factor": 1000,
-  "extra-save-iters": [0,1,2,4,8,16,32,64,128,256,512],
+  "extra-save-iters": [],
   "eval-interval": 100000,
   "eval-iters": 10,
   "log-interval": 10,
   "steps_per_print": 10,
   "wall_clock_breakdown": true,
 
-  "train-data-paths": ["/mnt/ssd-2/pile_deduped/pile_20B_tokenizer_text_document"],
-  "valid-data-paths": ["/mnt/ssd-2/pile_deduped/pile_20B_tokenizer_text_document"],
-  "test-data-paths": ["/mnt/ssd-2/pile_deduped/pile_20B_tokenizer_text_document"],
+  "data_path": "/NAS/wujunkang/guizhiyu/pythia/pythia_pile_idxmaps/pile_0.87_deduped_text_document",
 
   "tokenizer-type": "HFTokenizer",
-  "vocab-file": "/mnt/ssd-2/pile/20B_tokenizer.json"
+  "vocab-file": "/NAS/wujunkang/guizhiyu/gpt-neox/20B_tokenizer.json",
+
+  # DeepEmb settings
+  # "emb_layers_idx": [],
+  "emb_layers_idx": [0, 1, 2, 3, 4, 5],
+
+  "emb_init_std": 0.02,
 
 }
