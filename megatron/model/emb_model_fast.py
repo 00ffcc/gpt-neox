@@ -306,7 +306,7 @@ class SequentialWrapperDeepEmb(torch.nn.Module):
                         if layer_idx in self.neox_args.emb_layers_idx:
                             emb_idx = self.neox_args.emb_layers_idx.index(layer_idx)
                             hidden_size = self.neox_args.hidden_size
-                            layer_emb = emb.combine(emb_idx)
+                            layer_emb = self.emb.combine(emb_idx)
                         else:
                             layer_emb = None
                         hidden_states, attention_mask = inputs
@@ -434,18 +434,17 @@ class GPT2DeepEmbModelPipe(PipelineModule, torch.nn.Module):
         self.specs = []
         self.init_specs()  # initializes the layer specs (basically a fancy nn.Sequential)
 
-        embedding_dim = len(neox_args.emb_layers_idx) * neox_args.hidden_size
-
-        if embedding_dim > 0:
+        if len(neox_args.emb_layers_idx) > 0:
             self.emb = SparseEmbedding(
+                        num_layers             = len(neox_args.emb_layers_idx),
                         num_embeddings         = neox_args.padded_vocab_size, 
-                        embedding_dim          = embedding_dim,
+                        embedding_dim          = neox_args.hidden_size,
                         optimizer_params       = neox_args.emb_optimizer_params,
                         embedding_output_dtype = neox_args.emb_output_dtype,
                         params_dtype           = neox_args.emb_params_dtype,
                     )
-            # nn.init.constant_(self.emb[0].weight, 1) # for DeepEmb
-            nn.init.normal_(self.emb[0].weight, 0.0, neox_args.emb_init_std)
+            for emb_layer in self.emb.layers:
+                nn.init.normal_(emb_layer.weight, 0.0, neox_args.emb_init_std)
         else:
             self.emb = None
 

@@ -29,6 +29,7 @@ try:
     import wandb
     # import swanlab as wandb
     import swanlab
+    swanlab.login(api_key=os.environ["SWANLAB_API_KEY"], save=True)
     swanlab.sync_wandb()
 
 except ModuleNotFoundError:

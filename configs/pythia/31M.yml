@@ -92,4 +92,5 @@
 
   "emb_init_std": 0.02,
 
+  "use_fast_embs": false,
 }

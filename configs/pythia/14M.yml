@@ -49,7 +49,7 @@
   },
 
   # batch size (trained on 32 gpus)
-  "train_micro_batch_size_per_gpu": 16,
+  "train_micro_batch_size_per_gpu": 32,
   "data-impl": "mmap",
   "num_workers": 16,
 
@@ -83,14 +83,16 @@
   "steps_per_print": 10,
   "wall_clock_breakdown": true,
 
-  "data_path": "/NAS/wujunkang/guizhiyu/pythia/pythia_pile_idxmaps/pile_0.87_deduped_text_document",
+  "data_path": "../pythia_pile_idxmaps/pile_0.87_deduped_text_document",
 
   "tokenizer-type": "HFTokenizer",
-  "vocab-file": "/NAS/wujunkang/guizhiyu/gpt-neox/20B_tokenizer.json",
+  "vocab-file": "./20B_tokenizer.json",
 
   # DeepEmb settings
-  # "emb_layers_idx": [],
+  #"emb_layers_idx": [],
   "emb_layers_idx": [0, 1, 2, 3, 4, 5],
 
   "emb_init_std": 0.02,
+
+  "use_fast_embs": true,
 }
